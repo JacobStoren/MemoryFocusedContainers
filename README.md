@@ -5,6 +5,7 @@ A memory pool implementation with deallocation and index based access to the man
 It might also be called a kind of dynamic array. 
 
 Compared to a normal Memory Pool, it adds:
+
 1. Deallocation of the memory blocks at the end when they are empty. 
 2. Index based random access for parallell processing.
 
