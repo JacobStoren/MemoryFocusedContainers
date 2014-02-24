@@ -16,3 +16,8 @@ The point in using this instad of a plain std::vector etc is that pointers to th
 1. Currently only objects with a default constructor is supported.
 2. Certainly something more ...
 
+### Status
+
+The implementation is complete, and it seems to work as intended, but it is not completely covered by tests yet.
+It has not been run through a memory analyser an could thus contain memory leaks etc.
+
