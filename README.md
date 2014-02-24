@@ -10,6 +10,24 @@ Compared to a normal Memory Pool, it adds:
 2. Index based random access for parallell processing.
 
 The point in using this instad of a plain std::vector etc is that pointers to the objects stored here is *not* invalidated as the pool grows or shrinks.
+### Usage example
+
+    IndexableMemoryPool<SomeClass, 100> SomeClassPool;
+    
+    SomeClass* a = SomeClassPool.create();
+ 
+    for (size_t i = 0; i < SomeClassPool.size(); ++i)
+    {
+       SomeClass* obj = SomeClassPool[i];
+       if (obj)
+       {
+          obj->doStuff();
+       }
+    }
+    
+    SomeClassPool.erase(a);
+
+The destructor of the IndexableMemoryPool will run the destructor on all the objects it owns, and free all memory it has allocated.
 
 ### Limitations
 
