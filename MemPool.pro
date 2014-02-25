@@ -5,5 +5,6 @@ CONFIG -= qt
 SOURCES += main.cpp
 
 HEADERS += \
-    IndexableMemoryPool.h
+    IndexableMemoryPool.h \
+    MemoryReusingVector.h
 

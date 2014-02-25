@@ -123,7 +123,6 @@ private:
       m_nextFreeElement = elementMemoryBlock;
    }
 
-
 };
 
 
@@ -173,6 +172,7 @@ Object* IndexableMemoryPool<Object, blockSize>::create()
 
    return newObject;
 }
+
 
 template <typename Object, size_t blockSize>
 void IndexableMemoryPool<Object, blockSize>::erase(Object * objToDelete)
