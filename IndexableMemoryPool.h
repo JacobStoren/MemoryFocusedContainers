@@ -153,13 +153,14 @@ Object* IndexableMemoryPool<Object, blockSize>::create()
 
    this->makeSurePoolMemoryIsAvailable();
 
-   // Use placement new to construct an object in the previously allocated memory
-
    void * objMem = reinterpret_cast<void*>(&(m_nextFreeElement->objectMemory.object));
-   newObject = new (objMem) Object;
-
    m_nextFreeElement->isValid = true;
    m_nextFreeElement = m_nextFreeElement->objectMemory.nextFreeElement;
+
+   // Use placement new to construct an object in the previously allocated memory
+
+   newObject = new (objMem) Object;
+
 
    // Increment size
 
