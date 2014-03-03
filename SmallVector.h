@@ -3,7 +3,7 @@
 
 #include <cstring>
 
-template <typename Element, char embeddedElementCount, char sizeBitCount>
+template <typename Element, unsigned char embeddedElementCount, unsigned char sizeBitCount>
 class SmallVector
 {
 public:
@@ -13,7 +13,7 @@ public:
       resize(0);
    }
 
-   void resize(char newSize)
+   void resize(unsigned char newSize)
    {
       if (newSize == m_size) return;
 
@@ -29,15 +29,15 @@ public:
    }
 
 
-   Element& operator[] (char idx)     { if ( m_size <= embeddedElementCount ) { return (reinterpret_cast<Element*>(m_elmData))[static_cast<unsigned short> (idx)]; } else {return m_elmArray[static_cast<unsigned short> (idx)]; } }
-   void push_back(const Element& elm) { char newIdx = m_size; this->resize(m_size + 1); (*this)[newIdx] = elm; }
-   char size()                        { return m_size; }
+   Element& operator[] (unsigned char idx)     { if ( m_size <= embeddedElementCount ) { return (reinterpret_cast<Element*>(m_elmData))[static_cast<unsigned short> (idx)]; } else {return m_elmArray[static_cast<unsigned short> (idx)]; } }
+   void push_back(const Element& elm) { unsigned char newIdx = m_size; this->resize(m_size + 1); (*this)[newIdx] = elm; }
+   unsigned char size()                        { return m_size; }
    void clear() { resize(0); }
 
 private:
 
 
-   void runDestructorForUnnecessaryObjects(char newSize)
+   void runDestructorForUnnecessaryObjects(unsigned char newSize)
    {
       if (newSize >= m_size) return;
 
@@ -58,7 +58,7 @@ private:
       }
    }
 
-   void * allocateNewData(char newSize)
+   void * allocateNewData(unsigned char newSize)
    {
       if (newSize == 0) return NULL;
 
@@ -76,7 +76,7 @@ private:
       return newData;
    }
 
-   void copyOldDataIntoNewData(void * newData, char newSize)
+   void copyOldDataIntoNewData(void * newData, unsigned char newSize)
    {
       if (m_size == 0 || newSize == 0) return;
 
@@ -84,15 +84,15 @@ private:
 
       if (m_size > embeddedElementCount)
       {
-         memcpy(m_elmArray, newData, minElmCount*sizeof(Element));
+         memcpy( newData, m_elmArray, minElmCount*sizeof(Element));
       }
       else if (newSize > embeddedElementCount)
       {
-         memcpy(m_elmData, newData, minElmCount*sizeof(Element));
+         memcpy( newData,  m_elmData, minElmCount*sizeof(Element));
       }
    }
 
-   void runConstructorsForNewElements(void * newData, char newSize)
+   void runConstructorsForNewElements(void * newData, unsigned char newSize)
    {
       Element* newElements = reinterpret_cast<Element*> (newData);
 
@@ -102,7 +102,7 @@ private:
       }
    }
 
-   void freeOldDataAndUseNew(void * newData, char newSize)
+   void freeOldDataAndUseNew(void * newData, unsigned char newSize)
    {
       if (m_size > embeddedElementCount)
       {
@@ -123,7 +123,7 @@ private:
       char m_elmData[embeddedElementCount*sizeof(Element)];
 
    };
-   char m_size : sizeBitCount;
+   unsigned char m_size : sizeBitCount;
 
 };
 

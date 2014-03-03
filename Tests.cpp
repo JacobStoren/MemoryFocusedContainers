@@ -10,6 +10,7 @@ using namespace std;
 int destructorCountA = 0;
 int constructorCountA = 0;
 
+
 class A
 {
 public:
@@ -17,30 +18,6 @@ public:
    ~A() { ++destructorCountA; }
    double d;
    int a;
-};
-
-struct C
-{
-   double d;
-   int a;
-};
-int destructorCountB = 0;
-int constructorCountB = 0;
-
-class B
-{
-public:
-   B() { ++constructorCountB; }
-   ~B() { ++destructorCountB; }
-  // double d;
-  // int a;
-
-   char byte;
-   union{
-      void * ptr;
-      C hepp;
-   };
-
 };
 
 #include "gtest/gtest.h"
@@ -116,7 +93,7 @@ TEST(MemoryTools, IndexableMemoryPool)
       EXPECT_EQ((size_t)200, APool.size());
       EXPECT_EQ((size_t)2, APool.memoryBlockCount());
       EXPECT_EQ((size_t)196, APool.validObjectCount());
-      cout << "--Block freed -----------" << endl;
+      //cout << "--Block freed -----------" << endl;
       EXPECT_EQ(2222, APool[199]->a);
       EXPECT_DOUBLE_EQ(12.34567d, APool[199]->d);
 
@@ -145,46 +122,236 @@ TEST(MemoryTools, IndexableMemoryPool)
 TEST(MemoryTools, MemoryReusingVector)
 {
    {
-      cout << endl << "MemoryReusingVector" << endl << endl;
+      constructorCountA = 0;
+      destructorCountA = 0;
 
       MemoryReusingVector<A> vec;
+      vec.reserve(2);
       size_t idx1 = vec.create();
       size_t idx2 = vec.create();
       size_t idx3 = vec.create();
 
-      cout << idx1 << " " << idx2 << " " << idx3 << " " <<endl;
+      EXPECT_EQ((size_t)0, idx1);
+      EXPECT_EQ((size_t)1, idx2);
+      EXPECT_EQ((size_t)2, idx3);
 
-      vec.erase(idx2);
       vec.erase(idx1);
+      vec.erase(idx2);
 
-      for (size_t i = 0; i < vec.size(); ++i)
-      {
-         cout << "[" << i << "] " << vec.isValid(i) << endl;
-      }
+      EXPECT_FALSE(vec.isValid(0));
+      EXPECT_FALSE(vec.isValid(1));
+      EXPECT_TRUE (vec.isValid(2));
 
       idx1 = vec.create();
       idx2 = vec.create();
+      idx3 = vec.create();
 
-      cout << idx1 << " " << idx2 << " " << idx3 << " " <<endl;
+      EXPECT_EQ((size_t)1, idx1);
+      EXPECT_EQ((size_t)0, idx2);
+      EXPECT_EQ((size_t)3, idx3);
+
+      for (size_t i = 0; i < vec.size(); ++i)
+      {
+         if (vec[i])
+         {
+            EXPECT_EQ(2222, vec[i]->a);
+            EXPECT_DOUBLE_EQ(12.34567d, vec[i]->d);
+         }
+      }
+
    }
 
-   cout << endl << "SmallVector" << endl<< endl;
+   EXPECT_EQ(constructorCountA, destructorCountA);
+   EXPECT_EQ(6, constructorCountA);
+}
 
-   SmallVector<A, 1, 5> ve;
-   ve.resize(5);
-   cout << "Size: " << (unsigned short)ve.size() << endl;
-   ve[2].d = 100000;
-   cout << ve[2].d << endl;
-   cout << ve[3].d << endl;
 
-   cout << "SizeOf SmallVec: " << sizeof(SmallVector<A, 1, 5>) << endl;
+TEST(MemoryTools, SmallVector1)
+{
+   {
+      constructorCountA = 0;
+      destructorCountA = 0;
+
+      SmallVector<A, 1, 5> ve;
+
+      A a;
+      ve.push_back(a);
+
+      EXPECT_EQ(1, ve.size());
+      for (size_t i = 0; i < ve.size(); ++i)
+      {
+         EXPECT_EQ(2222, ve[i].a);
+         EXPECT_DOUBLE_EQ(12.34567d, ve[i].d);
+      }
+
+      ve.push_back(a);
+
+      EXPECT_EQ(2, ve.size());
+      for (size_t i = 0; i < ve.size(); ++i)
+      {
+         EXPECT_EQ(2222, ve[i].a);
+         EXPECT_DOUBLE_EQ(12.34567d, ve[i].d);
+      }
+
+      ve.resize(5);
+
+      EXPECT_EQ(5, ve.size());
+      for (size_t i = 0; i < ve.size(); ++i)
+      {
+         EXPECT_EQ(2222, ve[i].a);
+         EXPECT_DOUBLE_EQ(12.34567d, ve[i].d);
+      }
+
+      ve[2].d = 100000;
+
+      EXPECT_EQ(100000, ve[2].d);
+      EXPECT_EQ(6, constructorCountA);
+
+      ve.resize(5);
+      EXPECT_EQ(6, constructorCountA);
+
+      ve.resize(3);
+      EXPECT_EQ(6, constructorCountA);
+      EXPECT_EQ(2, destructorCountA);
+
+      ve.resize(8);
+      EXPECT_EQ(11, constructorCountA);
+      EXPECT_EQ(2, destructorCountA);
+
+      for (size_t i = 0; i < ve.size(); ++i)
+      {
+         EXPECT_EQ(2222, ve[i].a);
+         if (i == 2)
+            EXPECT_DOUBLE_EQ(100000, ve[i].d);
+         else
+            EXPECT_DOUBLE_EQ(12.34567d, ve[i].d);
+      }
+
+
+   }
+
+   EXPECT_EQ(constructorCountA, destructorCountA);
+   EXPECT_EQ(11, constructorCountA);
+}
+
+
+
+TEST(MemoryTools, SmallVector3)
+{
+   {
+      constructorCountA = 0;
+      destructorCountA = 0;
+
+      SmallVector<A, 3, 5> ve;
+
+      A a;
+      ve.push_back(a);
+
+      EXPECT_EQ(1, ve.size());
+      for (size_t i = 0; i < ve.size(); ++i)
+      {
+         EXPECT_EQ(2222, ve[i].a);
+         EXPECT_DOUBLE_EQ(12.34567d, ve[i].d);
+      }
+
+      ve.push_back(a);
+
+      EXPECT_EQ(2, ve.size());
+      for (size_t i = 0; i < ve.size(); ++i)
+      {
+         EXPECT_EQ(2222, ve[i].a);
+         EXPECT_DOUBLE_EQ(12.34567d, ve[i].d);
+      }
+      ve.resize(1);
+      EXPECT_EQ(1, destructorCountA);
+
+      EXPECT_EQ(1, ve.size());
+      for (size_t i = 0; i < ve.size(); ++i)
+      {
+         EXPECT_EQ(2222, ve[i].a);
+         EXPECT_DOUBLE_EQ(12.34567d, ve[i].d);
+      }
+
+      ve.resize(5);
+
+      EXPECT_EQ(5, ve.size());
+      for (size_t i = 0; i < ve.size(); ++i)
+      {
+         EXPECT_EQ(2222, ve[i].a);
+         EXPECT_DOUBLE_EQ(12.34567d, ve[i].d);
+      }
+
+      ve[2].d = 100000;
+
+      EXPECT_EQ(100000, ve[2].d);
+      EXPECT_EQ(7, constructorCountA);
+
+      ve.resize(5);
+      EXPECT_EQ(7, constructorCountA);
+
+      ve.resize(3);
+      EXPECT_EQ(7, constructorCountA);
+      EXPECT_EQ(3, destructorCountA);
+
+      ve.resize(8);
+      EXPECT_EQ(12, constructorCountA);
+      EXPECT_EQ(3, destructorCountA);
+
+      for (size_t i = 0; i < ve.size(); ++i)
+      {
+         EXPECT_EQ(2222, ve[i].a);
+         if (i == 2)
+            EXPECT_DOUBLE_EQ(100000, ve[i].d);
+         else
+            EXPECT_DOUBLE_EQ(12.34567d, ve[i].d);
+      }
+   }
+
+   EXPECT_EQ(constructorCountA, destructorCountA);
+   EXPECT_EQ(12, constructorCountA);
+}
+
+struct B
+{
+   double d;
+   int a;
+};
+
+int destructorCountB = 0;
+int constructorCountB = 0;
+
+class C
+{
+public:
+   C() { ++constructorCountB; }
+   ~C() { ++destructorCountB; }
+
+   // double d;
+   // int a;
+
+   char byte;
+   union{
+      void * ptr;
+      B hepp;
+   };
+};
+
+class D
+{
+   void*  ptr;
+   char dir  : 1;
+   char lIdx : 2;
+};
+
+TEST(MemoryTools, StructSizes)
+{
+   cout << "SizeOf SmallVec1: " << sizeof(SmallVector<A, 1, 5>) << endl;
+   cout << "SizeOf SmallVec3: " << sizeof(SmallVector<A, 3, 5>) << endl;
    cout << "SizeOf double: " << sizeof(double) << endl;
    cout << "SizeOf int: " << sizeof(int) << endl;
    cout << "SizeOf A: " << sizeof(A) << endl;
    cout << "SizeOf B: " << sizeof(B) << endl;
    cout << "SizeOf C: " << sizeof(C) << endl;
-
+   cout << "SizeOf D: " << sizeof(D) << endl;
+   cout << "SizeOf SmallVec<D, 1, 5>: " << sizeof(SmallVector<D, 1, 5>) << endl;
 }
-
-
-
