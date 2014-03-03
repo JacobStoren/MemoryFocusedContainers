@@ -3,7 +3,7 @@
 
 #include <vector>
 #include <cstddef>
-
+#include <iostream>
 // Iterator preserving, parallell access, contingous memory dynamic storage container
 
 template <typename Object, size_t blockSize>
@@ -64,7 +64,22 @@ private:
       {
          if (idxOfFirstBlockToFree > 0)
          {
-            m_elementMemoryBlocks[idxOfFirstBlockToFree - 1][blockSize-1].objectMemory.nextFreeElement = NULL;
+            Element* freeElement = NULL;
+
+            for (size_t bIdx = idxOfFirstBlockToFree; bIdx > 0 ; --bIdx)
+            {
+               for (size_t eIdx =  blockSize; eIdx > 0 ; --eIdx)
+               {
+                  Element* currentElement = &(m_elementMemoryBlocks[bIdx-1][eIdx-1]);
+                  if (!currentElement->isValid)
+                  {
+                     currentElement->objectMemory.nextFreeElement = freeElement;
+                     freeElement = currentElement;
+                  }
+               }
+            }
+
+            m_nextFreeElement = freeElement;
          }
          else
          {
@@ -212,9 +227,7 @@ Object* IndexableMemoryPool<Object, blockSize>::get(size_t idx)
    size_t blockIdx = idx/blockSize;
    size_t idxInBlock = idx%blockSize;
 
-   // Todo: Add debug assertions here
-
-   if (m_elementMemoryBlocks[blockIdx][idxInBlock].isValid)
+   if (blockIdx < m_elementMemoryBlocks.size() && m_elementMemoryBlocks[blockIdx][idxInBlock].isValid)
    {
       return reinterpret_cast<Object*>(&(m_elementMemoryBlocks[blockIdx][idxInBlock].objectMemory.object));
    }
