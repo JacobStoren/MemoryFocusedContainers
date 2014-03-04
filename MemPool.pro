@@ -10,5 +10,6 @@ HEADERS += \
     IndexableMemoryPool.h \
     MemoryReusingVector.h \
     SmallVector.h \
-    gtest/gtest.h
+    gtest/gtest.h \
+    MemoryReusingVectorGI.h
 

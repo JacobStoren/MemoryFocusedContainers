@@ -350,3 +350,58 @@ TEST(MemoryTools, StructSizes)
    cout << "SizeOf D: " << sizeof(D) << endl;
    cout << "SizeOf SmallVector<D, 1>: " << sizeof(SmallVector<D, 1>) << endl;
 }
+
+#include "MemoryReusingVectorGI.h"
+
+TEST(MemoryTools, GuardedIndices)
+{
+   {
+      constructorCountA = 0;
+      destructorCountA = 0;
+
+      MemoryReusingVectorGI<A> vec;
+      vec.reserve(2);
+      MemoryReusingVectorGI<A>::GuardedIndex  idx1 = vec.create();
+      MemoryReusingVectorGI<A>::GuardedIndex  idx2 = vec.create();
+      MemoryReusingVectorGI<A>::GuardedIndex  idx3 = vec.create();
+
+      EXPECT_EQ(vec[0], vec.get(idx1));
+      EXPECT_EQ(vec[1], vec.get(idx2));
+      EXPECT_EQ(vec[2], vec.get(idx3));
+
+      vec.erase(idx1);
+      vec.erase(idx2);
+
+
+      EXPECT_FALSE(vec.isValid(0));
+      EXPECT_FALSE(vec.isValid(1));
+      EXPECT_TRUE (vec.isValid(2));
+
+      MemoryReusingVectorGI<A>::GuardedIndex idx4 = vec.create();
+      MemoryReusingVectorGI<A>::GuardedIndex idx5 = vec.create();
+      MemoryReusingVectorGI<A>::GuardedIndex idx6 = vec.create();
+
+      EXPECT_EQ(vec[1], vec.get(idx4));
+      EXPECT_EQ(vec[0], vec.get(idx5));
+      EXPECT_EQ(vec[3], vec.get(idx6));
+
+      EXPECT_TRUE(vec.get(idx1) == NULL);
+      EXPECT_TRUE(vec.get(idx2) == NULL);
+      EXPECT_TRUE(vec.get(idx3) == vec[2]);
+
+      for (size_t i = 0; i < vec.size(); ++i)
+      {
+         if (vec[i])
+         {
+            EXPECT_EQ(2222, vec[i]->a);
+            EXPECT_DOUBLE_EQ(12.34567d, vec[i]->d);
+         }
+      }
+
+   }
+
+   EXPECT_EQ(constructorCountA, destructorCountA);
+   EXPECT_EQ(6, constructorCountA);
+
+   cout << "SizeOf MemoryReusingVectorGI<A>::GuardedIndex : " << sizeof(MemoryReusingVectorGI<A>::GuardedIndex) << endl;
+}
