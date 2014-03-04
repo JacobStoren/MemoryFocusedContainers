@@ -1,9 +1,16 @@
+// A dynamic vector optimized for small elements and size
+// Copyright (C) 2014 Jens Jacob Støren
+// Can be used under the GNU General Public License v3.0
+// If that license does not fit, please contact the author.
+
 #ifndef SMALLVECTOR_H
 #define SMALLVECTOR_H
 
 #include <cstring>
 
-template <typename Element, unsigned char embeddedElementCount, unsigned char sizeBitCount>
+// #pragma pack(1) // Use to minimize memory fotprint at the cost of some speed
+
+template <typename Element, unsigned char embeddedElementCount>
 class SmallVector
 {
 public:
@@ -35,7 +42,6 @@ public:
    void clear() { resize(0); }
 
 private:
-
 
    void runDestructorForUnnecessaryObjects(unsigned char newSize)
    {
@@ -117,14 +123,12 @@ private:
       m_size = newSize;
    }
 
-
    union {
       Element* m_elmArray;
-      char m_elmData[embeddedElementCount*sizeof(Element)];
-
+      char     m_elmData[embeddedElementCount*sizeof(Element)];
    };
-   unsigned char m_size : sizeBitCount;
+   unsigned char m_size;
 
 };
-
+#pragma pack()
 #endif // SMALLVECTOR_H

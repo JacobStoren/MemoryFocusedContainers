@@ -1,10 +1,14 @@
+// Iterator preserving, parallell access, contingous memory dynamic storage container
+// Copyright (C) 2014 Jens Jacob Støren
+// Can be used under the GNU General Public License v3.0
+// If that license does not fit, please contact the author.
+
 #ifndef INDEXABLEMEMORYPOOL_H
 #define INDEXABLEMEMORYPOOL_H
 
 #include <vector>
 #include <cstddef>
 #include <iostream>
-// Iterator preserving, parallell access, contingous memory dynamic storage container
 
 template <typename Object, size_t blockSize>
 class IndexableMemoryPool
@@ -34,8 +38,7 @@ private:
 
    union ObjectUnion
    {
-      //Object      object;
-      char        object[sizeof(Object)];
+      char        objectData[sizeof(Object)];
       Element*    nextFreeElement;
    };
 
@@ -150,7 +153,7 @@ IndexableMemoryPool<Object, blockSize>::~IndexableMemoryPool()
       {
          if (m_elementMemoryBlocks[blockIdx][idxInBlock].isValid)
          {
-            Object * objToDelete = reinterpret_cast<Object*>(&(m_elementMemoryBlocks[blockIdx][idxInBlock].objectMemory.object));
+            Object * objToDelete = reinterpret_cast<Object*>(&(m_elementMemoryBlocks[blockIdx][idxInBlock].objectMemory.objectData));
             objToDelete->~Object();
          }
       }
@@ -167,7 +170,7 @@ Object* IndexableMemoryPool<Object, blockSize>::create()
 
    this->makeSurePoolMemoryIsAvailable();
 
-   void * objMem = reinterpret_cast<void*>(&(m_nextFreeElement->objectMemory.object));
+   void * objMem = reinterpret_cast<void*>(&(m_nextFreeElement->objectMemory.objectData));
    m_nextFreeElement->isValid = true;
    m_nextFreeElement = m_nextFreeElement->objectMemory.nextFreeElement;
 
@@ -229,7 +232,7 @@ Object* IndexableMemoryPool<Object, blockSize>::get(size_t idx)
 
    if (blockIdx < m_elementMemoryBlocks.size() && m_elementMemoryBlocks[blockIdx][idxInBlock].isValid)
    {
-      return reinterpret_cast<Object*>(&(m_elementMemoryBlocks[blockIdx][idxInBlock].objectMemory.object));
+      return reinterpret_cast<Object*>(&(m_elementMemoryBlocks[blockIdx][idxInBlock].objectMemory.objectData));
    }
    else
    {

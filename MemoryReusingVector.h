@@ -1,3 +1,8 @@
+// A continous memory container that reuses slots that are deleted
+// Copyright (C) 2014 Jens Jacob Støren
+// Can be used under the GNU General Public License v3.0
+// If that license does not fit, please contact the author.
+
 #ifndef MEMORYREUSINGVECTOR_H
 #define MEMORYREUSINGVECTOR_H
 
@@ -5,25 +10,6 @@
 #include <cstddef>
 
 const size_t UNDEFINED_SIZE_T = (size_t)-1;
-
-#if 0
-// Some Idea ...
-template<Object>
-class IdxHandle
-{
-
-   // Needs static access to MemVector ...
-
-   Object* operator ->() { }
-   bool isNull();
-
-private:
-   size_t idx;
-   size_t reAllocCount;
-   template<Object> MemoryReusingVector* m_dataArray;
-}
-#endif
-
 
 template < typename Object>
 class MemoryReusingVector

@@ -10,7 +10,7 @@ using namespace std;
 int destructorCountA = 0;
 int constructorCountA = 0;
 
-
+//#pragma pack(1)
 class A
 {
 public:
@@ -19,6 +19,7 @@ public:
    double d;
    int a;
 };
+//#pragma pack()
 
 #include "gtest/gtest.h"
 
@@ -172,7 +173,7 @@ TEST(MemoryTools, SmallVector1)
       constructorCountA = 0;
       destructorCountA = 0;
 
-      SmallVector<A, 1, 5> ve;
+      SmallVector<A, 1> ve;
 
       A a;
       ve.push_back(a);
@@ -242,7 +243,7 @@ TEST(MemoryTools, SmallVector3)
       constructorCountA = 0;
       destructorCountA = 0;
 
-      SmallVector<A, 3, 5> ve;
+      SmallVector<A, 3> ve;
 
       A a;
       ve.push_back(a);
@@ -317,41 +318,35 @@ struct B
    int a;
 };
 
-int destructorCountB = 0;
-int constructorCountB = 0;
-
 class C
 {
 public:
-   C() { ++constructorCountB; }
-   ~C() { ++destructorCountB; }
 
-   // double d;
-   // int a;
-
-   char byte;
    union{
       void * ptr;
       B hepp;
    };
+   char byte;
 };
 
+//#pragma pack(1)
 class D
 {
    void*  ptr;
    char dir  : 1;
    char lIdx : 2;
 };
+//#pragma pack()
 
 TEST(MemoryTools, StructSizes)
 {
-   cout << "SizeOf SmallVec1: " << sizeof(SmallVector<A, 1, 5>) << endl;
-   cout << "SizeOf SmallVec3: " << sizeof(SmallVector<A, 3, 5>) << endl;
+   cout << "SizeOf SmallVector<A, 1>: " << sizeof(SmallVector<A, 1>) << endl;
+   cout << "SizeOf SmallVector<A, 3>: " << sizeof(SmallVector<A, 3>) << endl;
    cout << "SizeOf double: " << sizeof(double) << endl;
-   cout << "SizeOf int: " << sizeof(int) << endl;
+   cout << "SizeOf int:    " << sizeof(int) << endl;
    cout << "SizeOf A: " << sizeof(A) << endl;
    cout << "SizeOf B: " << sizeof(B) << endl;
    cout << "SizeOf C: " << sizeof(C) << endl;
    cout << "SizeOf D: " << sizeof(D) << endl;
-   cout << "SizeOf SmallVec<D, 1, 5>: " << sizeof(SmallVector<D, 1, 5>) << endl;
+   cout << "SizeOf SmallVector<D, 1>: " << sizeof(SmallVector<D, 1>) << endl;
 }
